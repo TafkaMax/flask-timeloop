@@ -10,6 +10,7 @@ class Job(Thread):
         self.execute = execute
         self.args = args
         self.kwargs = kwargs
+        self.stop_on_exception = False
 
     def stop(self):
         self.stopped.set()
@@ -18,8 +19,12 @@ class Job(Thread):
     def run(self):
         next_period = self.interval.total_seconds()
         next_time = time()
-
+        
         while not self.stopped.wait(next_period):
-            self.execute(*self.args, **self.kwargs)
+            try:
+                self.execute(*self.args, **self.kwargs)
+            except:
+                if self.stop_on_exception:
+                    break
             next_time += self.interval.total_seconds()
             next_period = next_time - time()

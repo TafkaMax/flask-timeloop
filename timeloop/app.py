@@ -63,17 +63,37 @@ class Timeloop():
             self.logger.info("Stopping job {}".format(j._execute))
             j.stop()
 
-    def job(self, interval):
+    def job(self, interval, swarm = False):
         """Decorator usefull to indicate a function that must looped call.
+        If swarm is true allows to create a swarm of the same jobs with 
+        different input parameters.
+
+        Example:
+            @timeloop.job(interval=1, swarm = True)
+            def sample_job_every_2s(c):
+                print("2s job current time : {}".format(c))
+
+            for i in range(2):
+                sample_job_every_1s(c = i)
         
         Arguments:
             interval {timedelta} -- Time between two execution.
-        """        
+        
+        Raises:
+            AttributeError: Interval must be timedelta or Number(int or float)
+                if it is wrong type this exception is raised.
+        """
+        
         def decorator(f):
             def wrapper(*args, **kwargs):
                 self._add_job(f, interval, *args, **kwargs)
                 return f
-            return wrapper
+                
+            if swarm:
+                return wrapper
+            else:
+                self._add_job(f, interval)
+                return f
         return decorator
 
     def stop(self):

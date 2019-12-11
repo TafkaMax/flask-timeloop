@@ -26,7 +26,7 @@ class Timeloop():
             func {callable} -- The Job, object/function that must be call to
                 execute the task.
             interval {timedelta} -- Time between two execution.
-        """        
+        """
         j = Job(interval, func, *args, **kwargs)
         self.jobs.append(j)
 
@@ -49,18 +49,18 @@ class Timeloop():
             block {[type]} -- [description]
             stop_on_exception {bool} -- if the job must be stopped if it caught
                 an exception; True is stopped, False continue a exection loop.
-        """        
+        """
         for j in self.jobs:
             j.daemon = not block
             j.stop_on_exception = stop_on_exception
             j.start()
-            self.logger.info("Registered job {}".format(j.execute))
+            self.logger.info("Registered job {}".format(j._execute))
 
     def _stop_jobs(self):
         """Stop all jobs
-        """        
+        """
         for j in self.jobs:
-            self.logger.info("Stopping job {}".format(j.execute))
+            self.logger.info("Stopping job {}".format(j._execute))
             j.stop()
 
     def job(self, interval):
@@ -78,19 +78,19 @@ class Timeloop():
 
     def stop(self):
         """Stop all jobs
-        """        
+        """
         self._stop_jobs()
         self.logger.info("Timeloop exited.")
 
     def start(self, block = False, stop_on_exception = False):
-        """Start all jobs create previusly by decorator. 
+        """Start all jobs create previusly by decorator.
         
         Keyword Arguments:
             block {bool} -- [description] (default: False)
             stop_on_exception {bool} -- if the job must be stopped if it caught
                 an exception; True is stopped, False continue a exection loop.
                 (default: False)
-        """        
+        """
         self.logger.info("Starting Timeloop..")
         self._start_jobs(block = block, stop_on_exception = stop_on_exception)
 

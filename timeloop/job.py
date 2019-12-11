@@ -9,16 +9,28 @@ class Job(Thread):
         that must be sent to the executed function.
         
         Arguments:
-            interval {timedelta} -- Time between two execution.
+            interval {timedelta or float} -- Time between two execution if it's a 
+                floating point number specifying a time in seconds (or fractions
+                thereof).
             execute {callable} -- The Job, object/function that must be call to
                 execute the task.
+        Raises:
+            AttributeError: If Interval is wrong type
         """        
         Thread.__init__(self)
         self.stopped = Event()
-        self.interval = interval
-        self.execute = execute
-        self.args = args
-        self.kwargs = kwargs
+        
+        if isinstance(interval,timedelta):
+            self._interval = interval.total_seconds()
+        elif isinstance(interval, (int, float)):
+            self._interval = interval
+        else:
+            raise AttributeError("Interval must be timedelta or number of \
+                seconds(or fractions thereof).")
+        
+        self._execute = execute
+        self._args = args
+        self._kwargs = kwargs
         self.stop_on_exception = False
 
     def stop(self):
@@ -32,14 +44,14 @@ class Job(Thread):
         into account the drift of time caused by the execution of the task. The
         loop is interrupted if stop_on_exception is True.
         """ 
-        next_period = self.interval.total_seconds()
+        next_period = self._interval
         next_time = time()
-        
+
         while not self.stopped.wait(next_period):
             try:
-                self.execute(*self.args, **self.kwargs)
+                self._execute(*self._args, **self._kwargs)
             except:
                 if self.stop_on_exception:
                     break
-            next_time += self.interval.total_seconds()
+            next_time += self._interval
             next_period = next_time - time()

@@ -19,7 +19,7 @@ class Timeloop():
         logger.setLevel(logging.INFO)
         self.logger = logger
 
-    def _add_job(self, func, interval, *args, **kwargs):
+    def _add_job(self, func, interval, exception, *args, **kwargs):
         """Create a new Job that execute in loop the func.
         
         Arguments:
@@ -27,7 +27,7 @@ class Timeloop():
                 execute the task.
             interval {timedelta} -- Time between two execution.
         """
-        j = Job(interval, func, *args, **kwargs)
+        j = Job(interval, func, exception, *args, **kwargs)
         self.jobs.append(j)
 
     def _block_main_thread(self):
@@ -47,12 +47,15 @@ class Timeloop():
         
         Arguments:
             block {[type]} -- [description]
-            stop_on_exception {bool} -- if the job must be stopped if it caught
-                an exception; True is stopped, False continue a exection loop.
+            stop_on_exception {Exception of bool} -- Stop the looping of task if
+                the Exception type is raised form task, if is bool True mean that
+                the task will stop if occurs any type of Exception, False mean
+                keep loop even if an exception is raised. This affect all job 
+                will create except for jobs where the exception param is valued 
+                (not False). (default: False)
         """
         for j in self.jobs:
             j.daemon = not block
-            j.stop_on_exception = stop_on_exception
             j.start()
             self.logger.info("Registered job {}".format(j._execute))
 
@@ -63,7 +66,7 @@ class Timeloop():
             self.logger.info("Stopping job {}".format(j._execute))
             j.stop()
 
-    def job(self, interval, swarm = False):
+    def job(self, interval, swarm = False, stop_on_exception = False):
         """Decorator usefull to indicate a function that must looped call.
         If swarm is true allows to create a swarm of the same jobs with 
         different input parameters.
@@ -78,6 +81,13 @@ class Timeloop():
         
         Arguments:
             interval {timedelta} -- Time between two execution.
+            swarm {bool} -- If True allows to declare a job calling a function 
+                where is posted a decorator. The advantage is that you can 
+                specify a value of param of the task; See example.
+            exception {Exception of bool} -- Stop the looping of task if the
+                Exception type is raised form task, if is bool True mean that the
+                task will stop if occurs any type of Exception, False mean keep
+                loop even if an exception is raised (default: False)
         
         Raises:
             AttributeError: Interval must be timedelta or Number(int or float)
@@ -86,13 +96,13 @@ class Timeloop():
         
         def decorator(f):
             def wrapper(*args, **kwargs):
-                self._add_job(f, interval, *args, **kwargs)
+                self._add_job(f, interval, stop_on_exception, *args, **kwargs)
                 return f
                 
             if swarm:
                 return wrapper
             else:
-                self._add_job(f, interval)
+                self._add_job(f, interval, stop_on_exception)
                 return f
         return decorator
 
@@ -107,11 +117,15 @@ class Timeloop():
         
         Keyword Arguments:
             block {bool} -- [description] (default: False)
-            stop_on_exception {bool} -- if the job must be stopped if it caught
-                an exception; True is stopped, False continue a exection loop.
-                (default: False)
+            stop_on_exception {Exception of bool} -- Stop the looping of task if
+                the Exception type is raised form task, if is bool True mean that
+                the task will stop if occurs any type of Exception, False mean
+                keep loop even if an exception is raised. This affect all job 
+                will create except for jobs where the exception param is valued 
+                (not False). (default: False)
         """
         self.logger.info("Starting Timeloop..")
+        Job.stop_on_exception = stop_on_exception
         self._start_jobs(block = block, stop_on_exception = stop_on_exception)
 
         self.logger.info("Timeloop now started. Jobs will run based on the interval set")

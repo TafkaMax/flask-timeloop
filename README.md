@@ -46,6 +46,24 @@ for id in range(1, 3):
 	sample_job(id)
 ```
 
+## Writing jobs that stop himself if exception occurs
+```python
+@tl.job(interval=timedelta(seconds=2), exception = True)
+def sample_job():
+    print( "I will die if any Exception occurs,time : {}".format(time.ctime()) )
+
+@tl.job(interval=timedelta(seconds=2), exception = AttributeError)
+def sample_job():
+    print( "I will die soon, but only if AttributeError occurs" )
+    raise AttributeError
+
+@tl.job(interval=timedelta(seconds=2))
+def sample_job():
+    print( "I will die only if OSError occurs, becouse of start function" )
+
+tl.start(stop_on_exception = OSError)
+```
+
 ## Start time loop in separate thread
 By default timeloop starts in a separate thread.
 

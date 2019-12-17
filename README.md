@@ -1,16 +1,25 @@
 # Timeloop
 Timeloop is a service that can be used to run periodic tasks after a certain interval.
 
-![timeloop](http://66.42.57.109/timeloop.jpg)
-
 Each job runs on a separate thread and when the service is shut down, it waits till all tasks currently being executed are completed.
 
-Inspired by this blog [`here`](https://www.g-loaded.eu/2016/11/24/how-to-terminate-running-python-threads-using-signals/)
+Cloned and enhanced from [`here`](https://github.com/sankalpjonn/timeloop.git)
 
 ## Installation
+Clone and install
 ```sh
-pip install timeloop
+git clone https://github.com/Ruggiero-Santo/timeloop.git
+sudo python setup.py install
 ```
+
+Direct installation 
+```sh
+pip install git+git://github.com/Ruggiero-Santo/timeloop.git
+# or
+pip install git+https://github.com/Ruggiero-Santo/timeloop.git
+```
+
+# Usage
 
 ## Writing jobs
 ```python
@@ -36,6 +45,7 @@ def sample_job_every_10s():
 ```
 
 ## Writing swarm jobs with arguments
+Allow to create a swarm of job withe differend parameters
 ```python
 @tl.job(interval=timedelta(seconds=5), swarm = True)
 def sample_job(idx):
@@ -63,30 +73,16 @@ def sample_job():
 
 tl.start(stop_on_exception = OSError)
 ```
+## Mode to start jobs
 
-## Start time loop in separate thread
-By default timeloop starts in a separate thread.
-
-Please do not forget to call ```tl.stop``` before exiting the program, Or else the jobs wont shut down gracefully.
-
+### Start time loop in separate thread
+By default timeloop starts in a separate thread. When it's in this mode do not forget to call ```tl.stop``` before exiting the program, Or else the jobs wont shut down gracefully (or they will not shutdown even).
 ```python
-tl.start()
-
-while True:
-  try:
-    time.sleep(1)
-  except KeyboardInterrupt:
-    tl.stop()
-    break
+tl.start() or tl.start(block=False)
 ```
 
-## Start time loop in main thread
-Doing this will automatically shut down the jobs gracefully when the program is killed, so no need to  call ```tl.stop```
+### Start time loop in main thread
+Doing this will automatically shut down the jobs gracefully when the program is killed, so no need to  call ```tl.stop```. The main thread that call the ```tl.start``` will be stuck until you kill him (kill command or Ctrl+C on shell).
 ```python
 tl.start(block=True)
 ```
-
-## Author
-* **Sankalp Jonna**
-
-Email me with any queries: [sankalpjonna@gmail.com](sankalpjonna@gmail.com).

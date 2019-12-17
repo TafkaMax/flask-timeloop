@@ -9,14 +9,21 @@ from timeloop.helpers import service_shutdown
 
 
 class Timeloop():
-    def __init__(self):
+    def __init__(self, logger = None):
+        """Create Timeloop object that control all job.
+        
+        Keyword Arguments:
+            logger {logging} -- If you have already a logger you can set with 
+                this the logger of Timeloop. (default: {None})
+        """
         self.jobs = []
-        ch = logging.StreamHandler(sys.stdout)
-        ch.setLevel(logging.INFO)
-        ch.setFormatter(logging.Formatter('[%(asctime)s] [%(name)s] [%(levelname)s] %(message)s'))
-        logger = logging.getLogger('timeloop')
-        logger.addHandler(ch)
-        logger.setLevel(logging.INFO)
+        if not logger:
+            ch = logging.StreamHandler(sys.stdout)
+            ch.setLevel(logging.INFO)
+            ch.setFormatter(logging.Formatter('[%(asctime)s] [%(name)s] [%(levelname)s] %(message)s'))
+            logger = logging.getLogger('timeloop')
+            logger.addHandler(ch)
+            logger.setLevel(logging.INFO)
         self.logger = logger
 
     def _add_job(self, func, interval, exception, *args, **kwargs):

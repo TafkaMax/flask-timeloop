@@ -16,7 +16,7 @@ class Timeloop():
             logger {logging} -- If you have already a logger you can set with 
                 this the logger of Timeloop. (default: {None})
         """
-        self.jobs = []
+        self._jobs = []
         if not logger:
             ch = logging.StreamHandler(sys.stdout)
             ch.setLevel(logging.INFO)
@@ -35,7 +35,7 @@ class Timeloop():
             interval {timedelta} -- Time between two execution.
         """
         j = Job(interval, func, exception, *args, **kwargs)
-        self.jobs.append(j)
+        self._jobs.append(j)
 
     def _block_main_thread(self):
         signal.signal(signal.SIGTERM, service_shutdown)
@@ -61,7 +61,7 @@ class Timeloop():
                 will create except for jobs where the exception param is valued 
                 (not False). (default: False)
         """
-        for j in self.jobs:
+        for j in self._jobs:
             j.daemon = not block
             j.start()
             self.logger.info("Registered job {}".format(j._execute))
@@ -69,11 +69,11 @@ class Timeloop():
     def _stop_jobs(self):
         """Stop all jobs
         """
-        for j in self.jobs:
+        for j in self._jobs:
             self.logger.info("Stopping job {}".format(j._execute))
             j.stop()
 
-    def job(self, interval, swarm = False, stop_on_exception = False):
+    def job(self, interval, swarm = False, stop_on_exception = False, **kwargs):
         """Decorator usefull to indicate a function that must looped call.
         If swarm is true allows to create a swarm of the same jobs with 
         different input parameters.
@@ -102,14 +102,14 @@ class Timeloop():
         """
         
         def decorator(f):
-            def wrapper(*args, **kwargs):
-                self._add_job(f, interval, stop_on_exception, *args, **kwargs)
+            def wrapper(*_args, **_kwargs):
+                self._add_job(f, interval, stop_on_exception, *_args, **{**kwargs , **_kwargs})
                 return f
                 
             if swarm:
                 return wrapper
             else:
-                self._add_job(f, interval, stop_on_exception)
+                self._add_job(f, interval, stop_on_exception, **kwargs)
                 return f
         return decorator
 

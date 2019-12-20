@@ -56,11 +56,11 @@ class Job(Thread):
                 elif issubclass(Job.general_exception, Exception):
                     self._exception = Job.general_exception
                 else:
-                    raise AttributeError("exception must be a subclass on Exception or Bool.")
-        elif issubclass(exception, Exception):
+                    raise AttributeError("exception must be a subclass of Exception or Bool.")
+        elif isinstance(exception, type) and issubclass(exception, Exception):
             self._exception = exception
         else:
-            raise AttributeError("exception must be a subclass on Exception or Bool.")
+            raise AttributeError("exception must be a subclass of Exception or Bool.")
 
         self._execute = execute
         self._args = args
@@ -75,7 +75,7 @@ class Job(Thread):
     def run(self):
         """Start the loop of execution of the task. During loop is already take 
         into account the drift of time caused by the execution of the task. The
-        loop is interrupted if stop_on_exception is True.
+        loop is interrupted if stop_on_exception is True when a Exception is raise.
         """ 
         next_period = self._interval
         next_time = time()
@@ -84,6 +84,8 @@ class Job(Thread):
             try:
                 self._execute(*self._args, **self._kwargs)
             except Exception as e:
+                # TODO: Add to log
+                print(type(e).__name__, " is raise from ", self._execute)
                 traceback.print_exc()
                 if self._exception != False and isinstance(e, self._exception):
                     break

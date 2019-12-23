@@ -28,7 +28,7 @@ class Timeloop():
             logger.setLevel(logging.INFO)
         self._logger = logger
 
-    def job(self, interval, swarm = False, stop_on_exception = False, **kwargs):
+    def job(self, interval = None, swarm = False, stop_on_exception = False, **kwargs):
         """Decorator usefull to indicate a function that must looped call.
         If swarm is true allows to create a swarm of the same jobs with 
         different input parameters.

@@ -45,10 +45,13 @@ class Job(Thread):
         if isinstance(interval,timedelta):
             self._interval = interval.total_seconds()
         elif isinstance(interval, (int, float)):
+            if interval <= 0:
+                raise AttributeError("Interval when int must be greater than 0.")
             self._interval = interval
+        elif interval == None:
+            raise AttributeError("Interval must be set during declation of job.")
         else:
-            raise AttributeError("Interval must be timedelta or number of \
-                seconds(or fractions thereof).")
+            raise AttributeError("Interval must be timedelta or number of seconds(or fractions thereof).")
 
         # Check exception param and if False see general_exception
         if isinstance(exception, bool):

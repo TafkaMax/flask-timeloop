@@ -83,6 +83,16 @@ def sample_job(idx):
 for id in range(1, 3):
 	sample_job(id)
 ```
+In the job declared with  ```swarm = True``` the param ```interval``` can be omitted. This allows you to create a swarm of job with different interval, including ```interval = 2``` or ```interval = timedelta(seconds = 2)``` in the creation, like example.
+```python
+@tl.job(swarm = True)
+def sample_job(idx):
+    print( "Task id: {} | time: {}".format(idx, time.ctime()) )
+
+# example: same jobs with different interval
+for id in range(1, 3):
+	sample_job(id, interval = id)
+```
 
 ## Writing jobs that stop himself if exception occurs
 ```python

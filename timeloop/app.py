@@ -58,7 +58,8 @@ class Timeloop():
         
         def decorator(f):
             def wrapper(*_args, **_kwargs):
-                self.add_job(f, interval, stop_on_exception, *_args, **{**kwargs , **_kwargs})
+                _interval = _kwargs.pop("interval", interval) # override if interval is in kwargs
+                self.add_job(f, _interval, stop_on_exception, *_args, **{**kwargs , **_kwargs})
                 return f
                 
             if swarm:
@@ -107,6 +108,7 @@ class Timeloop():
         """Stop the jobs
         """
         self._logger.info("Stopping job {}, that run {}".format(j.ident, j._execute))
+        del self._jobs["active"][j.ident]
         j.stop()
 
     def start(self, block = False, stop_on_exception = False):

@@ -2,13 +2,14 @@ from threading import Thread, Event
 from datetime import timedelta
 from time import time
 
-import traceback
+import logging
+import sys
 
 class Job(Thread):
 
     general_exception = False
     
-    def __init__(self, interval, execute, exception = False, *args, **kwargs): 
+    def __init__(self, interval, execute, exception = False, logger = None,  *args, **kwargs): 
         """Simplest Job Thread that executes a task in loop. The time between two 
         execution is indicated by interval. Exception param stop the looping of 
         task if the exception type is raised form task, if is bool True mean that 
@@ -28,20 +29,29 @@ class Job(Thread):
                 Exception type is raised form task, if is bool True mean that the
                 task will stop if occurs any type of Exception, False mean keep
                 loop even if an exception is raised (default: False)
+            logger {logging} -- Log object where will print the Exception raised
+                from the job. Uf None stdout will be set. (default: None)
         Raises:
             AttributeError: If Interval is wrong type, if exception is wrong type
-        """        
+        """
         Thread.__init__(self)
         self.stopped = Event()
+        if logger:
+            self._logger = logger
+        else:
+            logger = logging.StreamHandler(sys.stdout)
         
         # Check interval param
         if isinstance(interval,timedelta):
             self._interval = interval.total_seconds()
         elif isinstance(interval, (int, float)):
+            if interval <= 0:
+                raise AttributeError("Interval when int must be greater than 0.")
             self._interval = interval
+        elif interval == None:
+            raise AttributeError("Interval must be set during declation of job.")
         else:
-            raise AttributeError("Interval must be timedelta or number of \
-                seconds(or fractions thereof).")
+            raise AttributeError("Interval must be timedelta or number of seconds(or fractions thereof).")
 
         # Check exception param and if False see general_exception
         if isinstance(exception, bool):
@@ -84,10 +94,28 @@ class Job(Thread):
             try:
                 self._execute(*self._args, **self._kwargs)
             except Exception as e:
-                # TODO: Add to log
-                print(type(e).__name__, " is raise from ", self._execute)
-                traceback.print_exc()
+                logging.exception(type(e).__name__ + " is raise from " + str(self._execute))
                 if self._exception != False and isinstance(e, self._exception):
                     break
             next_time += self._interval
             next_period = next_time - time()
+
+    def get_info(self):
+        """Get all useful info of job in a dict.
+            {ident": int,
+            "interval": int(sec),
+            "exception": Exception subclass,
+            "execute": function,
+            "args": tupla,
+            "kwargs": dict}
+        
+        Returns:
+            dict -- dict with all information.
+        """        
+        return {
+            "ident": self.ident,
+            "interval": self._interval,
+            "exception": self._exception,
+            "execute": self._execute,
+            "args": self._args,
+            "kwargs": self._kwargs}

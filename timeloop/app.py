@@ -90,25 +90,26 @@ class Timeloop():
             self._jobs["to_run"].append(j)
         return j.ident
             
-
     def stop_all(self):
         """Stop all jobs
         """
         for j in self._jobs["active"].values():
             self._stop_job(j)
+        self._jobs["active"].clear()
         self._logger.info("Timeloop exited.")
 
     def stop_job(self, ident):
         """Stop the jobs
         """
         j = self._jobs["active"].get(ident, None)
-        if j: self._stop_job(j)
+        if j: 
+            self._stop_job(j)
+            del self._jobs["active"][j.ident]
 
     def _stop_job(self, j):
         """Stop the jobs
         """
         self._logger.info("Stopping job {}, that run {}".format(j.ident, j._execute))
-        del self._jobs["active"][j.ident]
         j.stop()
 
     def start(self, block = False, stop_on_exception = False):

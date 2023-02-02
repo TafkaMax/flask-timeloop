@@ -38,7 +38,7 @@ class Timeloop():
         else:
             self.state = None
 
-    def init_timeloop(self, app):
+    def init_timeloop(self):
         return _Timeloop()
 
     def init_app(self, app):
@@ -47,9 +47,12 @@ class Timeloop():
 
         :param app: Flask application instance
         """
-        state = self.init_timeloop(app)
+        # Initalize state from Flask app
+        state = self.init_timeloop()
+        # Set the state of the application for the current Timeloop object.
+        self.state = state
 
-        # register extension with app
+        # register extension with Flask app
         app.extensions = getattr(app, 'extensions', {})
         app.extensions['timeloop'] = state
         return state
@@ -59,7 +62,7 @@ class Timeloop():
 
 
     def job(self, interval = None, swarm = False, stop_on_exception = False, **kwargs):
-        """Decorator useful to indicate a function that must looped call.
+        """Decorator useful to indicate a function that must looped.
         If swarm is true allows to create a swarm of the same jobs with 
         different input parameters.
 
@@ -72,7 +75,7 @@ class Timeloop():
                 sample_job_every_1s(c = i)
         
         Arguments:
-            interval {timedelta} -- Time between two execution.
+            interval {timedelta} -- Time between two executions.
             swarm {bool} -- If True allows to declare a job calling a function 
                 where is posted a decorator. The advantage is that you can 
                 specify a value of param of the task; See example.
@@ -100,15 +103,15 @@ class Timeloop():
         return decorator
 
     def add_job(self, func, interval, exception, *args, **kwargs):
-        """Create a new Job that executes in loop the func.
+        """Create a new Job that executes in a loop, the function.
         
         Arguments:
-            func {callable} -- The Job, object/function that must be call to
+            func {callable} -- The Job, object/function that must be called to
                 execute the task.
-            interval {timedelta} -- Time between two execution.
+            interval {timedelta} -- Time between two executions.
         
         Returns:
-            int -- Identifier of job. If the job has be registered only, 
+            int -- Identifier of job. If the job has to be registered only, 
                 identifier is None, it will be set during start of job.
         """
         if self.state:
@@ -147,7 +150,7 @@ class Timeloop():
             j.stop()
 
     def start(self, block = False, stop_on_exception = False):
-        """Start all jobs create previusly by decorator.
+        """Start all jobs create previously by a decorator.
         
         Keyword Arguments:
             block {bool} -- [description] (default: False)
@@ -165,7 +168,7 @@ class Timeloop():
             self._start_all(stop_on_exception = stop_on_exception)
             print(self._jobs)
 
-            self.state.logger.info("Timeloop now started. Jobs will run based on the interval set")
+            self.state.logger.info("Timeloop now started. Jobs will run based on a set interval.")
             if block:
                 self._block_main_thread()
 
@@ -209,7 +212,7 @@ class Timeloop():
                 break
 
     def active_job(self, filter_function = lambda x: True):
-        """Get info af all active job that match a filter.
+        """Get info of all active jobs that match a filter.
         
         Arguments:
             filter {callable} -- a callable object that take dict arg and return

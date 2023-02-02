@@ -4,19 +4,25 @@ Timeloop is a service that can be used to run periodic tasks after a certain int
 Each job runs on a separate thread and when the service is shut down, it waits till all tasks currently being executed are completed.
 
 Forked and enhanced from [`here`](https://github.com/sankalpjonn/timeloop.git)
+Forked and enchanced from [`here`](https://github.com/Ruggiero-Santo/timeloop.git)
 
 ## Installation
 Clone and install
 ```sh
-git clone https://github.com/Ruggiero-Santo/timeloop.git
+git clone https://github.com/TafkaMax/timeloop.git
 sudo python setup.py install
 ```
 
 Direct installation 
 ```sh
-pip install git+git://github.com/Ruggiero-Santo/timeloop.git
+pip install git+https://github.com/TafkaMax/timeloop.git
 # or
-pip install git+https://github.com/Ruggiero-Santo/timeloop.git
+pip install git+https://github.com/TafkaMax/timeloop.git
+```
+
+Poetry 
+```sh
+poetry add flask-timeloop
 ```
 
 # Usage

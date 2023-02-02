@@ -1,0 +1,16 @@
+[tool.poetry]
+name = "flask-timeloop"
+version = "0.1.0"
+description = "Timeloop module that integrates with Flask"
+authors = ["Taavi Ansper <taavi.ansper@cyber.ee>"]
+license = "MIT"
+readme = "README.md"
+packages = [{include = "flask_timeloop"}]
+
+[tool.poetry.dependencies]
+python = "^3.10"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

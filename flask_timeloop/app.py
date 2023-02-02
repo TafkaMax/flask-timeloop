@@ -10,7 +10,7 @@ from timeloop.helpers import service_shutdown
 
 class Timeloop():
     def __init__(self, logger = None):
-        """Create Timeloop object that control all job.
+        """Create Timeloop object that control all jobs.
         
         Keyword Arguments:
             logger {logging} -- If you have already a logger you can set with 
@@ -29,7 +29,7 @@ class Timeloop():
         self._logger = logger
 
     def job(self, interval = None, swarm = False, stop_on_exception = False, **kwargs):
-        """Decorator usefull to indicate a function that must looped call.
+        """Decorator useful to indicate a function that must looped call.
         If swarm is true allows to create a swarm of the same jobs with 
         different input parameters.
 
@@ -70,7 +70,7 @@ class Timeloop():
         return decorator
 
     def add_job(self, func, interval, exception, *args, **kwargs):
-        """Create a new Job that execute in loop the func.
+        """Create a new Job that executes in loop the func.
         
         Arguments:
             func {callable} -- The Job, object/function that must be call to
@@ -128,6 +128,7 @@ class Timeloop():
         self._block = block
         Job.stop_on_exception = stop_on_exception
         self._start_all(stop_on_exception = stop_on_exception)
+        print(self._jobs)
 
         self._logger.info("Timeloop now started. Jobs will run based on the interval set")
         if block:

@@ -1,1 +1,1 @@
-from timeloop.app import Timeloop
+from flask_timeloop.app import Timeloop

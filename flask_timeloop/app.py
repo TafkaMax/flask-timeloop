@@ -3,9 +3,9 @@ import sys
 import signal
 import time
 
-from timeloop.exceptions import ServiceExit
-from timeloop.job import Job
-from timeloop.helpers import service_shutdown
+from flask_timeloop.exceptions import ServiceExit
+from flask_timeloop.job import Job
+from flask_timeloop.helpers import service_shutdown
 
 
 class Timeloop():

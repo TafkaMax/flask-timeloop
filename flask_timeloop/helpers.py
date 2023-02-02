@@ -1,4 +1,4 @@
-from timeloop.exceptions import ServiceExit
+from flask_timeloop.exceptions import ServiceExit
 
 
 def service_shutdown(signum, frame):

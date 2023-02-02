@@ -9,18 +9,8 @@ from flask_timeloop.helpers import service_shutdown
 
 
 class _Timeloop():
-    def __init__(self, app) -> None:
+    def __init__(self, app, logger = None) -> None:
         self.app = app
-        
-
-class Timeloop():
-    def __init__(self, logger = None, app=None):
-        """Create Timeloop object that control all jobs.
-        
-        Keyword Arguments:
-            logger {logging} -- If you have already a logger you can set with 
-                this the logger of Timeloop. (default: {None})
-        """
         self._jobs = {"to_run": [], "active": {}}
         self._block = False
         self._already_started = False
@@ -32,7 +22,15 @@ class Timeloop():
             logger.addHandler(ch)
             logger.setLevel(logging.INFO)
         self._logger = logger
-        self.app = app
+        
+
+class Timeloop():
+    def __init__(self, app=None):
+        """Create Timeloop object that control all jobs.
+        
+        Keyword Arguments:
+            app: Flask application
+        """
         if app is not None:
             self.state = self.init_app(app)
         else:
@@ -48,7 +46,6 @@ class Timeloop():
         :param app: Flask application instance
         """
         state = self.init_timeloop(app)
-        self.app = app
 
         # register extension with app
         app.extensions = getattr(app, 'extensions', {})
@@ -113,34 +110,34 @@ class Timeloop():
                 identifier is None, it will be set during start of job.
         """
         j = Job(interval, func, exception, self._logger, *args, **kwargs)
-        self._logger.info("Registered job {}".format(j._execute))
+        self.state._logger.info("Registered job {}".format(j._execute))
 
-        if self._already_started:
+        if self.state._already_started:
             self._start_job(j)
         else:
-            self._jobs["to_run"].append(j)
+            self.state._jobs["to_run"].append(j)
         return j.ident
             
     def stop_all(self):
         """Stop all jobs
         """
-        for j in self._jobs["active"].values():
+        for j in self.state._jobs["active"].values():
             self._stop_job(j)
-        self._jobs["active"].clear()
-        self._logger.info("Timeloop exited.")
+        self.state._jobs["active"].clear()
+        self.state._logger.info("Timeloop exited.")
 
     def stop_job(self, ident):
         """Stop the jobs
         """
-        j = self._jobs["active"].get(ident, None)
+        j = self.state._jobs["active"].get(ident, None)
         if j: 
             self._stop_job(j)
-            del self._jobs["active"][j.ident]
+            del self.state._jobs["active"][j.ident]
 
     def _stop_job(self, j):
         """Stop the jobs
         """
-        self._logger.info("Stopping job {}, that run {}".format(j.ident, j._execute))
+        self.state._logger.info("Stopping job {}, that run {}".format(j.ident, j._execute))
         j.stop()
 
     def start(self, block = False, stop_on_exception = False):
@@ -155,13 +152,13 @@ class Timeloop():
                 will create except for jobs where the exception param is valued 
                 (not False). (default: False)
         """
-        self._logger.info("Starting Timeloop..")
-        self._block = block
+        self.state._logger.info("Starting Timeloop..")
+        self.state._block = block
         Job.stop_on_exception = stop_on_exception
         self._start_all(stop_on_exception = stop_on_exception)
         print(self._jobs)
 
-        self._logger.info("Timeloop now started. Jobs will run based on the interval set")
+        self.state._logger.info("Timeloop now started. Jobs will run based on the interval set")
         if block:
             self._block_main_thread()
 
@@ -177,8 +174,8 @@ class Timeloop():
                 will create except for jobs where the exception param is valued 
                 (not False). (default: False)
         """
-        self._already_started = True
-        for j in self._jobs["to_run"]:
+        self.state._already_started = True
+        for j in self.state._jobs["to_run"]:
             self._start_job(j)
 
     def _start_job(self, j):
@@ -186,8 +183,8 @@ class Timeloop():
         """
         j.daemon = not self._block
         j.start()
-        self._jobs["active"].update({j.ident:j})
-        self._logger.info("Actived job {}".format(j._execute))
+        self.state._jobs["active"].update({j.ident:j})
+        self.state._logger.info("Actived job {}".format(j._execute))
 
     def _block_main_thread(self):
         """Block the main thread if block param in start function is True.
@@ -214,7 +211,7 @@ class Timeloop():
             list -- list of all info of job that match a filter function
         """        
         res = []
-        for j in self._jobs["active"].values():
+        for j in self.state._jobs["active"].values():
             info_j = j.get_info()
             if filter_function(info_j): 
                 res.append(info_j)

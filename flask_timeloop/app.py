@@ -8,8 +8,12 @@ from flask_timeloop.job import Job
 from flask_timeloop.helpers import service_shutdown
 
 
+class _Timeloop():
+    def __init__(self) -> None:
+        pass
+
 class Timeloop():
-    def __init__(self, logger = None):
+    def __init__(self, logger = None, app=None):
         """Create Timeloop object that control all jobs.
         
         Keyword Arguments:
@@ -27,6 +31,31 @@ class Timeloop():
             logger.addHandler(ch)
             logger.setLevel(logging.INFO)
         self._logger = logger
+        self.app = app
+        if app is not None:
+            self.state = self.init_app(app)
+        else:
+            self.state = None
+
+    def init_timeloop(self, config, debug=False, testing=False):
+        return _Timeloop()
+
+    def init_app(self, app):
+        """Initalizes timeloop from application settings.
+        You can use this if you want to set up your Timeloop instance at configuration time.
+
+        :param app: Flask application instance
+        """
+        state = self.init_timeloop(app.config)
+
+        # register extension with app
+        app.extensions = getattr(app, 'extensions', {})
+        app.extensions['timeloop'] = state
+        return state
+    
+    def __getattr__(self, name):
+        return getattr(self.state, name, None)
+
 
     def job(self, interval = None, swarm = False, stop_on_exception = False, **kwargs):
         """Decorator useful to indicate a function that must looped call.

@@ -9,20 +9,20 @@ from flask_timeloop.helpers import service_shutdown
 
 
 class _Timeloop():
-    def __init__(self, app) -> None:
-        self.app = app
+    def __init__(self) -> None:
+        # List of jobs, initalizied when app is run.
         self.jobs = {"to_run": [], "active": {}}
+        # Run in a single thread.
         self.block = False
+        # If start() is already initalized.
         self.already_started = False
-        if not app:
-            ch = logging.StreamHandler(sys.stdout)
-            ch.setLevel(logging.INFO)
-            ch.setFormatter(logging.Formatter('[%(asctime)s] [%(name)s] [%(levelname)s] %(message)s'))
-            logger = logging.getLogger('timeloop')
-            logger.addHandler(ch)
-            logger.setLevel(logging.INFO)
-        else:
-            logger = app.logger
+        # Logger conf
+        ch = logging.StreamHandler(sys.stdout)
+        ch.setLevel(logging.INFO)
+        ch.setFormatter(logging.Formatter('[%(asctime)s] [%(name)s] [%(levelname)s] %(message)s'))
+        logger = logging.getLogger('timeloop')
+        logger.addHandler(ch)
+        logger.setLevel(logging.INFO)
         self.logger = logger
         
 
@@ -39,7 +39,7 @@ class Timeloop():
             self.state = None
 
     def init_timeloop(self, app):
-        return _Timeloop(app)
+        return _Timeloop()
 
     def init_app(self, app):
         """Initalizes timeloop from application settings.

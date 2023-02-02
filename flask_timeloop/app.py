@@ -9,8 +9,9 @@ from flask_timeloop.helpers import service_shutdown
 
 
 class _Timeloop():
-    def __init__(self) -> None:
-        pass
+    def __init__(self, app) -> None:
+        self.app = app
+        
 
 class Timeloop():
     def __init__(self, logger = None, app=None):
@@ -37,8 +38,8 @@ class Timeloop():
         else:
             self.state = None
 
-    def init_timeloop(self, config, debug=False, testing=False):
-        return _Timeloop()
+    def init_timeloop(self, app, debug=False, testing=False):
+        return _Timeloop(app)
 
     def init_app(self, app):
         """Initalizes timeloop from application settings.
@@ -46,7 +47,7 @@ class Timeloop():
 
         :param app: Flask application instance
         """
-        state = self.init_timeloop(app.config)
+        state = self.init_timeloop(app)
         self.app = app
 
         # register extension with app

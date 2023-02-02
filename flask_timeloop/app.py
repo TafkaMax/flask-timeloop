@@ -47,6 +47,7 @@ class Timeloop():
         :param app: Flask application instance
         """
         state = self.init_timeloop(app.config)
+        self.app = app
 
         # register extension with app
         app.extensions = getattr(app, 'extensions', {})

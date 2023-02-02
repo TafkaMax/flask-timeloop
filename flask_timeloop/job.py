@@ -35,6 +35,7 @@ class Job(Thread):
             AttributeError: If Interval is wrong type, if exception is wrong type
         """
         Thread.__init__(self)
+        self.stop_on_exception = None
         self.stopped = Event()
         if logger:
             self._logger = logger

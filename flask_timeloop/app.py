@@ -1,6 +1,5 @@
 from datetime import timedelta
 import logging
-from logging import Logger
 import sys
 import signal
 import time
@@ -11,7 +10,7 @@ from flask_timeloop.helpers import service_shutdown
 
 
 class _Timeloop():
-    def __init__(self, app, logger=None) -> None:
+    def __init__(self, app) -> None:
         # List of jobs, initalizied when app is run.
         self.jobs = {"to_run": [], "active": {}}
         # Run in a single thread.
@@ -19,13 +18,13 @@ class _Timeloop():
         # If start() is already initalized.
         self.already_started = False
         # Logger conf
-        if not logger:
+        if not app.logger:
             ch = logging.StreamHandler(sys.stdout)
             ch.setLevel(logging.INFO)
             ch.setFormatter(logging.Formatter('[%(asctime)s] [%(name)s] [%(levelname)s] %(message)s'))
             logger = logging.getLogger('timeloop')
             logger.addHandler(ch)
-        self.logger = logger
+        self.logger = app.logger
         # Add application as an object for timeloop.
         self.app = app
         
@@ -42,17 +41,17 @@ class Timeloop():
         else:
             self.state = None
 
-    def init_timeloop(self, app, logger: Logger | None):
-        return _Timeloop(app, logger=logger)
+    def init_timeloop(self, app):
+        return _Timeloop(app)
 
-    def init_app(self, app, logger = None):
+    def init_app(self, app):
         """Initalizes timeloop object from application settings.
         You can use this if you want to set up your Timeloop instance at configuration time.
 
         :param app: Flask application instance
         """
         # Initalize state from Flask app
-        state = self.init_timeloop(app, logger)
+        state = self.init_timeloop(app)
         # Set the state of the application for the current Timeloop object.
         self.state = state
 

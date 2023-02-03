@@ -1,5 +1,5 @@
-# Timeloop
-Timeloop is a service that can be used to run periodic tasks after a certain interval.
+# Flask-Timeloop
+Timeloop is a service that can be used to run periodic tasks after a certain interval. It is **meant** to be used to with an underlying flask application.
 
 Each job runs on a separate thread and when the service is shut down, it waits till all tasks currently being executed are completed.
 
@@ -27,14 +27,68 @@ poetry add flask-timeloop
 
 # Usage
 
+The recommended way is to use this library with flask factory pattern.
+
+**NB! This is not the correct way to implement the flask extension, as I add the application context to the extension data. BUT Flask only works during requests, but this functionality is internal and does not care about requests. It's like a cron, but inside the application.**
+
 ## Writing jobs
+
+### Factory pattern
+
 ```python
+#python_project_folder/your_app_name/extensions.py
+from flask_timeloop import Timeloop
+
+timeloop = Timeloop()
+```
+
+```python
+#python_project_folder/your_app_name/__init__.py
+#(this can also be main.py or whatever you want.)
+
+from flask import Flask
+
+def create_app():
+    app = Flask(__name__)
+
+    # Import timeloop and join timeloop to flask application
+    from your_app_name.extensions import flask-timeloop
+    timeloop.init_app(app)
+    # Start the timeloop
+    timeloop.start()
+    return app
+```
+
+```python
+#python_project_folder/main.py
+from your_app_name import create_app
+app = create_app()
+```
+
+```python
+from your_app_name.extensions import timeloop
+
+@timeloop.job(interval=timedelta(minutes=10))
+def do_something():
+    with timeloop.app.app_context():
+        do_something_that_needs_application_context()
+```
+
+### Basic one file application.
+
+```python
+#main.py
 import time
 
 from timeloop import Timeloop
 from datetime import timedelta
 
-tl = Timeloop()
+from flask import Flask
+
+
+app = Flask(__name__)
+
+tl = Timeloop(app)
 
 @tl.job(interval = timedelta(seconds = 2))
 def sample_job_every_2s():
@@ -89,7 +143,7 @@ def sample_job(idx):
 for id in range(1, 3):
 	sample_job(id)
 ```
-In the job declared with  ```swarm = True``` the param ```interval``` can be omitted. This allows you to create a swarm of job with different interval, including ```interval = 2``` or ```interval = timedelta(seconds = 2)``` in the creation, like example.
+In the job declared with  `swarm = True` the param `interval` can be omitted. This allows you to create a swarm of job with different interval, including `interval = 2` or `interval = timedelta(seconds = 2)` in the creation, like example.
 ```python
 @tl.job(swarm = True)
 def sample_job(idx):
@@ -100,7 +154,7 @@ for id in range(1, 3):
 	sample_job(id, interval = id)
 ```
 
-## Writing jobs that stop himself if exception occurs
+## Writing jobs that stop if an exception occurs
 ```python
 @tl.job(interval = timedelta(seconds = 2), exception = True)
 def sample_job():
@@ -119,14 +173,14 @@ tl.start(stop_on_exception = OSError)
 ```
 ## Mode to start jobs
 
-### Start time loop in separate thread
-By default timeloop starts in a separate thread. When it's in this mode do not forget to call ```tl.stop``` before exiting the program, Or else the jobs wont shut down gracefully (or they will not shutdown even).
+### Start timeloop in a separate thread
+By default timeloop starts in a separate thread. When it's in this mode do not forget to call `tl.stop()` before exiting the program, or else the jobs wont shut down gracefully (or they will even not shutdown).
 ```python
 tl.start() or tl.start(block=False)
 ```
 
-### Start time loop in main thread
-Doing this will automatically shut down the jobs gracefully when the program is killed, so no need to  call ```tl.stop```. The main thread that call the ```tl.start``` will be stuck until you kill him (kill command or Ctrl+C on shell).
+### Start time loop in the main thread
+Doing this will automatically shut down the jobs gracefully when the program is killed, so no need to  call `tl.stop()`. The main thread that calls the `tl.start()` will be stuck until you kill him (kill command or Ctrl+C on shell).
 ```python
 tl.start(block=True)
 ```

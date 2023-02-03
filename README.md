@@ -6,21 +6,30 @@ Each job runs on a separate thread and when the service is shut down, it waits t
 Forked and enhanced from [`here`](https://github.com/sankalpjonn/timeloop.git)
 Forked and enchanced from [`here`](https://github.com/Ruggiero-Santo/timeloop.git)
 
+#### PyPi
+
+https://pypi.org/project/flask-timeloop/
+
 ## Installation
-Clone and install
+
+### pip
+
+```sh
+pip install flask-timeloop
+```
+
+#### Clone and install
 ```sh
 git clone https://github.com/TafkaMax/timeloop.git
 sudo python setup.py install
 ```
 
-Direct installation 
+#### Direct installation 
 ```sh
-pip install git+https://github.com/TafkaMax/timeloop.git
-# or
 pip install git+https://github.com/TafkaMax/timeloop.git
 ```
 
-Poetry 
+#### Poetry
 ```sh
 poetry add flask-timeloop
 ```

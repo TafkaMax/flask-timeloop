@@ -1,3 +1,4 @@
+from datetime import timedelta
 import logging
 import sys
 import signal
@@ -63,7 +64,7 @@ class Timeloop():
         return getattr(self.state, name, None)
 
 
-    def job(self, interval = None, swarm = False, stop_on_exception = False, **kwargs):
+    def job(self, interval: timedelta, swarm = False, stop_on_exception = False, **kwargs):
         """Decorator useful to indicate a function that must be looped.
         If swarm is true allows to create a swarm of the same jobs with 
         different input parameters.
@@ -104,7 +105,7 @@ class Timeloop():
                 return f
         return decorator
 
-    def add_job(self, func, interval, exception, *args, **kwargs):
+    def add_job(self, func, interval: timedelta, exception: bool, *args, **kwargs):
         """Create a new Job that executes in a loop, the function.
         
         Arguments:
@@ -117,7 +118,7 @@ class Timeloop():
                 identifier is None, it will be set during start of job.
         """
         if self.state:
-            job = Job(interval, func, exception, self.state.logger, *args, **kwargs)
+            job = Job(interval, func, exception, logger=self.state.logger, *args, **kwargs)
             self.state.logger.info("Registered job: {}".format(job._execute))
 
             # Timeloop .start() has been called, then start the job.
@@ -219,6 +220,7 @@ class Timeloop():
                 self.stop_all()
                 break
 
+    #TODO currently not in use, find out what to do with this method.
     def active_job(self, filter_function = lambda x: True):
         """Get info of all active jobs that match a filter.
         

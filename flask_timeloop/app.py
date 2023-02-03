@@ -18,13 +18,10 @@ class _Timeloop():
         # If start() is already initalized.
         self.already_started = False
         # Logger conf
-        if not app.logger:
-            ch = logging.StreamHandler(sys.stdout)
-            ch.setLevel(logging.INFO)
-            ch.setFormatter(logging.Formatter('[%(asctime)s] [%(name)s] [%(levelname)s] %(message)s'))
-            logger = logging.getLogger('timeloop')
-            logger.addHandler(ch)
-        self.logger = app.logger
+        timeloop_handler = logging.StreamHandler(sys.stdout)
+        timeloop_handler.setLevel(logging.INFO)
+        timeloop_handler.setFormatter(logging.Formatter('[%(asctime)s] [%(name)s] [%(levelname)s] %(message)s'))
+        app.logger.addHandler(timeloop_handler)
         # Add application as an object for timeloop.
         self.app = app
         
@@ -118,8 +115,8 @@ class Timeloop():
                 identifier is None, it will be set during start of job.
         """
         if self.state:
-            job = Job(interval, func, exception, logger=self.state.logger, *args, **kwargs)
-            self.state.logger.info("Registered job: {}".format(job._execute))
+            job = Job(interval, func, exception, logger=self.state.app.logger, *args, **kwargs)
+            self.state.app.logger.info("Registered job: {}".format(job._execute))
 
             # Timeloop .start() has been called, then start the job.
             if self.state.already_started:
@@ -137,7 +134,7 @@ class Timeloop():
                 self._stop_job(job)
             # Clear active jobs dictionary.
             self.state.jobs["active"].clear()
-            self.state.logger.info("Timeloop exited.")
+            self.state.app.logger.info("Timeloop exited.")
 
     def stop_job(self, ident):
         """Stop the jobs
@@ -152,7 +149,7 @@ class Timeloop():
         """Stop the jobs
         """
         if self.state:
-            self.state.logger.info("Stopping job {}, that is running {}".format(job.ident, job._execute))
+            self.state.app.logger.info("Stopping job {}, that is running {}".format(job.ident, job._execute))
             job.stop()
 
     def start(self, block: bool = False, stop_on_exception: bool = False):
@@ -167,14 +164,14 @@ class Timeloop():
         """
         # Only start the the timeloop, if state exists. State is initalized, when Flask app is added as an parameter to init_app or during __init__.
         if self.state:
-            self.state.logger.info("Starting Timeloop..")
+            self.state.app.logger.info("Starting Timeloop..")
             # Initalize block
             self.state.block = block
             # TODO check, maybe the next one can be done better.
             #Job.stop_on_exception = stop_on_exception
             self._start_all(stop_on_exception = stop_on_exception)
 
-            self.state.logger.info("Timeloop service now started. Jobs will run based on a set interval.")
+            self.state.app.logger.info("Timeloop service now started. Jobs will run based on a set interval.")
             # If block is set, block main thread.
             if block:
                 self._block_main_thread()
@@ -205,7 +202,7 @@ class Timeloop():
             job.start()
             # Set the job as an 'active' job
             self.state.jobs["active"].update({job.ident:job})
-            self.state.logger.info("Activated job: {}".format(job._execute))
+            self.state.app.logger.info("Activated job: {}".format(job._execute))
 
     def _block_main_thread(self):
         """Block the main thread if block param in start function is True.

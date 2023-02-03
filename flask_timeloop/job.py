@@ -10,7 +10,7 @@ class Job(Thread):
     general_exception = False
     
     def __init__(self, interval, execute, exception = False, logger = None,  *args, **kwargs): 
-        """Simplest Job Thread that executes a task in loop. The time between two 
+        """Simplest Job Thread that executes a task in a loop. The time between two 
         executions is indicated by an interval. Exception param stops the looping of 
         task if the exception type is raised form task, if the exception is a boolean with the value being True, then the task will stop if any type of Exception occurs. When exception boolean is set to False, then the loop will continue even if an exception is raised. 
         If exception is set to False, then look at 

@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "flask-timeloop"
-version = "0.2.0"
+version = "0.2.1"
 description = "Timeloop module that integrates with Flask"
 authors = ["Taavi Ansper <taavi.ansper@cyber.ee>"]
 license = "MIT"

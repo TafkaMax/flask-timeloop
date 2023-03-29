@@ -54,7 +54,7 @@ class Timeloop():
 
         # register extension with Flask app
         app.extensions = getattr(app, 'extensions', {})
-        app.extensions['timeloop'] = state
+        app.extensions['timeloop'] = self
         return state
     
     def __getattr__(self, name):
